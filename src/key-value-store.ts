@@ -37,12 +37,12 @@ export class KeyValueStore {
     this._taskManager.clearSchedule(key);
 
     return new Promise<boolean>(resolve => {
-      this._taskManager.add(
-        () => setKeyValueToDb(this._kvConfig.dbFileName, key, value),
-        success => {
+      const task = () => setKeyValueToDb(this._kvConfig.dbFileName, key, value);
+      this._taskManager.add(task, success => {
           // schedule key expiry
           if (expiryTimeInMs >= 0 && expiryTimeInMs < Infinity) {
-            this._taskManager.schedule(() => removeKeyValueFromDb(this._kvConfig.dbFileName, key), expiryTimeInMs, key, (_success) => {
+            const scheduleTask = () => removeKeyValueFromDb(this._kvConfig.dbFileName, key);
+            this._taskManager.schedule(scheduleTask, expiryTimeInMs, key, (_keyRemoved) => {
               //
             });
           }
@@ -57,7 +57,6 @@ export class KeyValueStore {
     }
 
     const task = () => getValueFromDb(this._kvConfig.dbFileName, key);
-
     return new Promise<number | undefined>((resolve) => {
       this._taskManager.add(task, (value) => {
         resolve(value);

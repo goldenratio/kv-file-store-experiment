@@ -47,7 +47,7 @@ export class KeyValueStore {
           if (expiryTimeInMs >= 0 && expiryTimeInMs < Infinity) {
             const scheduleTask = () => removeKeyValueFromDb(this._kvConfig.dbFileName, key);
             this._taskManager.schedule(scheduleTask, expiryTimeInMs, key, (_keyRemoved) => {
-              //
+              // kv removed by scheduler
             });
           }
           this._metrics.end(metricId, success, !success ? `failed to write key ${key}, with value ${value}, to db` : '');

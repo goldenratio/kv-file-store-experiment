@@ -17,6 +17,10 @@ export async function atomicAppendFile(filePath, data) {
       } else {
         // appendFile(filePath, data)
         createLockFile(filePath)
+          .catch(() => {
+            // wait till lock is released
+            setTimeout(perform, 1);
+          })
           .then(() => appendFile(filePath, data))
           .then(() => deleteLockFile(filePath))
           .then(() => resolve())
@@ -42,6 +46,10 @@ export async function atomicWriteFile(filePath, data) {
       } else {
         // writeFile(filePath, data, { encoding: 'utf8' })
         createLockFile(filePath)
+          .catch(() => {
+            // wait till lock is released
+            setTimeout(perform, 1);
+          })
           .then(() => writeFile(filePath, data, { encoding: 'utf8' }))
           .then(() => deleteLockFile(filePath))
           .then(() => resolve())
@@ -66,6 +74,10 @@ export async function atomicReadFile(filePath) {
       } else {
         // writeFile(filePath, data, { encoding: 'utf8' })
         createLockFile(filePath)
+          .catch(() => {
+            // wait till lock is released
+            setTimeout(perform, 1);
+          })
           .then(() => readFile(filePath, { encoding: 'utf8' }))
           .then(data => {
             return deleteLockFile(filePath)

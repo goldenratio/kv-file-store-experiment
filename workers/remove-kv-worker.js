@@ -13,7 +13,7 @@ readFile(workerData.dbFilePath,  { encoding: 'utf8' })
       const updatedContent = lines.join('\n');
       return Promise.resolve(updatedContent);
     }
-    return Promise.resolve(undefined);
+    return Promise.resolve(data);
   })
   .then(data => {
     if (typeof data === 'string') {

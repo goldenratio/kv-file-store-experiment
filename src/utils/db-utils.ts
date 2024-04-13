@@ -54,8 +54,8 @@ export async function getValueFromDb(dbFileName: string, key: string): Promise<{
       }
     });
 
-    worker.on('error', _error => {
-      // console.log(`error reading key ${key} : ${error.message}`);
+    worker.on('error', error => {
+      console.log(`error reading key ${key} : ${error.message}`);
     });
 
     worker.on('exit', () => {
@@ -79,12 +79,12 @@ export async function removeKeyValueFromDb(dbFileName: string, key: string): Pro
       }
 
       if (!success) {
-        console.log('removeKey: ', key, data['reason']);
+        console.log('removeKey failed: ', key, data['reason']);
       }
     });
 
-    worker.on('error', _error => {
-      // console.log(`error removing key ${key} : ${error.message}`);
+    worker.on('error', error => {
+      console.log(`error removing key ${key} : ${error.message}`);
     });
 
     worker.on('exit', () => {

@@ -5,7 +5,7 @@ import { config } from './config.js';
 import { getRandomCharacter } from "./utils/math-utils.js";
 
 async function main(): Promise<void> {
-  await runTest('simulation-with-no-expiry-time-01', 1000);
+  await runTest('simulation-with-no-expiry-time-01', 10);
 }
 
 async function runTest(_testName: string, iterations: number, _keyExpiryTimeEnabled: boolean = false): Promise<void> {

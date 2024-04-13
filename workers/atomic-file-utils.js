@@ -13,7 +13,7 @@ export async function atomicAppendFile(filePath, data) {
     const perform = () => {
       if (isLockExist(filePath)) {
         // wait till lock is released
-        setTimeout(perform, 10);
+        setTimeout(perform, 1);
       } else {
         // appendFile(filePath, data)
         createLockFile(filePath)
@@ -38,7 +38,7 @@ export async function atomicWriteFile(filePath, data) {
     const perform = () => {
       if (isLockExist(filePath)) {
         // wait till lock is released
-        setTimeout(perform, 10);
+        setTimeout(perform, 1);
       } else {
         // writeFile(filePath, data, { encoding: 'utf8' })
         createLockFile(filePath)
@@ -62,7 +62,7 @@ export async function atomicReadFile(filePath) {
     const perform = () => {
       if (isLockExist(filePath)) {
         // wait till lock is released
-        setTimeout(perform, 10);
+        setTimeout(perform, 1);
       } else {
         // writeFile(filePath, data, { encoding: 'utf8' })
         createLockFile(filePath)

@@ -18,27 +18,11 @@ atomicReadFile(workerData.dbFilePath,  { encoding: 'utf8' })
   })
   .then(data => {
     const updatedData = data + `${key}:${value}\n`;
-    // parentPort.postMessage(`${key}:${value}`);
     return atomicWriteFile(workerData.dbFilePath, updatedData);
   })
   .then(() => {
     parentPort.postMessage({ success: true });
   })
-  .catch(() => {
-    parentPort.postMessage({ success: false });
+  .catch(err => {
+    parentPort.postMessage({ success: false, reason: err });
   });
-
-
-
-// atomicAppendFile(workerData.dbFilePath, data)
-//   .then(() => {
-//     if (parentPort) {
-//       parentPort.postMessage({ success: true });
-//     }
-//   })
-//   .catch(() => {
-//     if (parentPort) {
-//       parentPort.postMessage({ success: false });
-//     }
-//   });
-

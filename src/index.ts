@@ -16,7 +16,7 @@ async function runTest(_testName: string, iterations: number, keyExpiryTimeEnabl
   let currentItem = 0;
   const incrementProgress = () => {
     currentItem ++;
-    printProgress(`iterations: ${currentItem}/${iterations} - ${Math.round((currentItem / iterations) * 100)}%`);
+    printProgress(`iterations: ${currentItem}/${iterations} - ${Math.round((currentItem / iterations) * 100)}% `);
     if (currentItem === iterations) {
       onComplete();
     }
@@ -25,6 +25,7 @@ async function runTest(_testName: string, iterations: number, keyExpiryTimeEnabl
   const onComplete = () => {
     console.log('\ntest done!');
     console.log([... keyList.values()], keyList.size);
+    // console.log(kv.getMetricsLog());
   }
 
   for (let i = 0; i < iterations; i++) {

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { removeFile, touchFile } from './utils/file-utils.js';
 import { TaskManager } from './utils/task-manager.js';
 import { getValueFromDb, removeKeyValueFromDb, setKeyValueToDb } from './utils/db-utils.js';
+import { MetricData, Metrics } from './utils/metrics.js';
 
 interface KVConfig {
   readonly dbFileName: string,
@@ -12,6 +13,7 @@ interface KVConfig {
 export class KeyValueStore {
   private readonly _kvConfig: KVConfig;
   private readonly _taskManager: TaskManager;
+  protected readonly _metrics: Metrics;
 
   private _isInitialized: boolean = false;
 
@@ -19,6 +21,7 @@ export class KeyValueStore {
     console.log('KeyValueStore, config: ', config);
     this._kvConfig = config;
     this._taskManager = new TaskManager(this._kvConfig.concurrentThreads);
+    this._metrics = new Metrics();
   }
 
   async init(): Promise<void> {
@@ -34,6 +37,7 @@ export class KeyValueStore {
       throw Error('KV not initialized');
     }
 
+    const metricId = this._metrics.begin('set');
     this._taskManager.clearSchedule(key);
 
     return new Promise<boolean>(resolve => {
@@ -46,6 +50,7 @@ export class KeyValueStore {
               //
             });
           }
+          this._metrics.end(metricId, success, !success ? `failed to write key ${key}, with value ${value}, to db` : '');
           resolve(success);
         });
     });
@@ -56,12 +61,19 @@ export class KeyValueStore {
       throw Error('KV not initialized');
     }
 
+    const metricId = this._metrics.begin('get');
+
     const task = () => getValueFromDb(this._kvConfig.dbFileName, key);
     return new Promise<number | undefined>((resolve) => {
-      this._taskManager.add(task, (value) => {
+      this._taskManager.add(task, ({ value, success }) => {
+        this._metrics.end(metricId, success, !success ? `failed to get value for key: ${key}, from db` : '');
         resolve(value);
       });
     });
 
+  }
+
+  getMetricsLog(): ReadonlyArray<MetricData> {
+    return this._metrics.getLogs();
   }
 }

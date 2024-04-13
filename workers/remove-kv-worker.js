@@ -23,7 +23,7 @@ readFile(workerData.dbFilePath,  { encoding: 'utf8' })
     }
   })
   .then(() => parentPort.postMessage({ success: true }))
-  .catch(() => {
-    parentPort.postMessage({ success: false });
+  .catch(err => {
+    parentPort.postMessage({ success: false, reason: err });
   });
 

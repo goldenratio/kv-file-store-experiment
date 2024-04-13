@@ -20,7 +20,7 @@ export async function atomicAppendFile(filePath, data) {
           .then(() => appendFile(filePath, data))
           .then(() => deleteLockFile(filePath))
           .then(() => resolve())
-          .catch(() => reject());
+          .catch(err => reject(err));
       }
     };
 
@@ -40,7 +40,7 @@ export async function atomicWriteFile(filePath, data) {
           .then(() => writeFile(filePath, data, { encoding: 'utf8' }))
           .then(() => deleteLockFile(filePath))
           .then(() => resolve())
-          .catch(() => reject());
+          .catch(err => reject(err));
       }
     };
 
@@ -63,7 +63,7 @@ export async function atomicReadFile(filePath) {
               .then(() => data)
           })
           .then(data => resolve(data))
-          .catch(() => reject());
+          .catch(err => reject(err));
       }
     };
 
@@ -85,13 +85,16 @@ async function createLockFile(filePath) {
 }
 
 async function deleteLockFile(filePath) {
-  if (!existsSync(filePath + lockFileSuffix)) {
+  const lockFilePath = filePath + lockFileSuffix;
+
+  if (!existsSync(lockFilePath)) {
     return Promise.resolve();
   }
 
   return new Promise((resolve, reject) => {
-    unlink(filePath + lockFileSuffix)
+    unlink(lockFilePath)
       .then(() => resolve())
-      .catch(err => reject(err));
+      // we fail safely intentionally, lock file maybe already deleted
+      .catch(() => resolve());
   });
 }

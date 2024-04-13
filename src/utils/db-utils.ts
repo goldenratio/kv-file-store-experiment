@@ -14,6 +14,10 @@ export async function setKeyValueToDb(dbFileName: string, key: string, value: nu
       if (data && typeof data['success'] === 'boolean') {
         success = data['success'];
       }
+
+      if (!success) {
+        console.log('setKey: ', key, data['reason']);
+      }
     });
 
     worker.on('error', error => {
@@ -27,19 +31,26 @@ export async function setKeyValueToDb(dbFileName: string, key: string, value: nu
   });
 }
 
-export async function getValueFromDb(dbFileName: string, key: string): Promise<number | undefined> {
-  return new Promise<number | undefined>(resolve => {
+export async function getValueFromDb(dbFileName: string, key: string): Promise<{ value: number | undefined, success: boolean }> {
+  return new Promise<{ value: number | undefined, success: boolean }>(resolve => {
     const workerFilePath = path.resolve('workers', 'read-kv-worker.js');
     const dbFilePath = path.resolve(dbFileName);
 
     const worker = new Worker(workerFilePath, { workerData: { dbFilePath: dbFilePath, key: key } });
-    let resultData: number | undefined = undefined;
+    let value: number | undefined = undefined;
+    let success: boolean = false;
 
     worker.on('message', (data) => {
-      if (typeof data === 'number') {
-        resultData = data;
-      } else {
-        resultData = undefined;
+      if (data && typeof data['success'] === 'boolean') {
+        success = data['success'];
+      }
+
+      if (data && typeof data['value'] === 'number') {
+        value = data['value'];
+      }
+
+      if (!success) {
+        console.log('getValue: ', key, data['reason']);
       }
     });
 
@@ -49,7 +60,7 @@ export async function getValueFromDb(dbFileName: string, key: string): Promise<n
 
     worker.on('exit', () => {
       // console.log('worker exit ', key);
-      resolve(resultData);
+      resolve({ value, success });
     });
   });
 }
@@ -65,6 +76,10 @@ export async function removeKeyValueFromDb(dbFileName: string, key: string): Pro
     worker.on('message', (data) => {
       if (data && typeof data['success'] === 'boolean') {
         success = data['success'];
+      }
+
+      if (!success) {
+        console.log('removeKey: ', key, data['reason']);
       }
     });
 

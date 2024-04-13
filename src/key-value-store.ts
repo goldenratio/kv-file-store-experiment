@@ -40,8 +40,11 @@ export class KeyValueStore {
       this._taskManager.add(
         () => setKeyValueToDb(this._kvConfig.dbFileName, key, value),
         success => {
+          // schedule key expiry
           if (expiryTimeInMs >= 0 && expiryTimeInMs < Infinity) {
-            this._taskManager.schedule(() => removeKeyValueFromDb(this._kvConfig.dbFileName, key), expiryTimeInMs, key);
+            this._taskManager.schedule(() => removeKeyValueFromDb(this._kvConfig.dbFileName, key), expiryTimeInMs, key, (_success) => {
+              //
+            });
           }
           resolve(success);
         });

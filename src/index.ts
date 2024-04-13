@@ -5,10 +5,10 @@ import { config } from './config.js';
 import { getRandomCharacter } from "./utils/math-utils.js";
 
 async function main(): Promise<void> {
-  await runTest('simulation-with-no-expiry-time-01', 10);
+  await runTest('simulation-with-no-expiry-time-01', 100, false);
 }
 
-async function runTest(_testName: string, iterations: number, _keyExpiryTimeEnabled: boolean = false): Promise<void> {
+async function runTest(_testName: string, iterations: number, keyExpiryTimeEnabled: boolean = false): Promise<void> {
   const kv = new KeyValueStore(config);
   await kv.init();
   let keyList = new Set<string>();
@@ -32,7 +32,8 @@ async function runTest(_testName: string, iterations: number, _keyExpiryTimeEnab
     const key = getRandomCharacter();
 
     if (operationType === 0) {
-      kv.setValue(key, 99993 + i)
+      const expiryTimeInMs = keyExpiryTimeEnabled ? randomInt(0, 101) : Infinity;
+      kv.setValue(key, 99993 + i, expiryTimeInMs)
         .then(_success => {
           // console.log(`set key: ${key}, success: ${success}`);
           incrementProgress();

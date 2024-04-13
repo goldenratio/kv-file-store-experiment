@@ -22,14 +22,10 @@ atomicReadFile(workerData.dbFilePath,  { encoding: 'utf8' })
     return atomicWriteFile(workerData.dbFilePath, updatedData);
   })
   .then(() => {
-    if (parentPort) {
-      parentPort.postMessage({ success: true });
-    }
+    parentPort.postMessage({ success: true });
   })
   .catch(() => {
-    if (parentPort) {
-      parentPort.postMessage({ success: false });
-    }
+    parentPort.postMessage({ success: false });
   });
 
 

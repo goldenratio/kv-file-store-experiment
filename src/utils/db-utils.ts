@@ -43,8 +43,8 @@ export async function getValueFromDb(dbFileName: string, key: string): Promise<n
       }
     });
 
-    worker.on('error', error => {
-      console.log(`error reading key ${key} : ${error.message}`);
+    worker.on('error', _error => {
+      // console.log(`error reading key ${key} : ${error.message}`);
     });
 
     worker.on('exit', () => {
@@ -54,24 +54,27 @@ export async function getValueFromDb(dbFileName: string, key: string): Promise<n
   });
 }
 
-export async function removeKeyValueFromDb(dbFileName: string, key: string): Promise<void> {
-  return new Promise<void>(resolve => {
+export async function removeKeyValueFromDb(dbFileName: string, key: string): Promise<boolean> {
+  return new Promise<boolean>(resolve => {
     const workerFilePath = path.resolve('workers', 'remove-kv-worker.js');
     const dbFilePath = path.resolve(dbFileName);
 
     const worker = new Worker(workerFilePath, { workerData: { dbFilePath: dbFilePath, key: key } });
+    let success: boolean = false;
 
     worker.on('message', (data) => {
-      console.log('removeKeyValueFromDb: ', data)
+      if (data && typeof data['success'] === 'boolean') {
+        success = data['success'];
+      }
     });
 
-    worker.on('error', error => {
-      console.log(`error removing key ${key} : ${error.message}`);
+    worker.on('error', _error => {
+      // console.log(`error removing key ${key} : ${error.message}`);
     });
 
     worker.on('exit', () => {
       // console.log('worker exit ', key);
-      resolve();
+      resolve(success);
     });
   });
 }

@@ -27,8 +27,10 @@ export class TaskManager {
     this.executeNextWorker();
   }
 
-  schedule(fn: () => void, delayInMs: number, key: string): void {
-    const timeoutId = setTimeout(fn, delayInMs);
+  schedule<T = unknown>(fn: () => Promise<T>, delayInMs: number, key: string, onComplete: (value: T) => void): void {
+    const timeoutId = setTimeout(async () => {
+       fn().then(v => onComplete(v));
+    }, delayInMs);
     this._schedulerTimeoutIdMap.set(key, timeoutId);
   }
 

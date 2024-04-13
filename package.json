@@ -1,0 +1,22 @@
+{
+  "name": "kv-store-experiment",
+  "version": "1.0.0",
+  "description": "",
+  "engines": {
+    "node": ">=20.10.0",
+    "npm": ">=10.0.0"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx ./src/index.ts",
+    "prod": "npm run build && node ./dist/index.js",
+    "build": "tsc"
+  },
+  "author": "Karthik",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5"
+  }
+}

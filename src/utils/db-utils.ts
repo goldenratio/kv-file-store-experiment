@@ -3,7 +3,7 @@ import { Worker } from 'node:worker_threads';
 
 export async function setKeyValueToDb(dbFileName: string, key: string, value: number): Promise<boolean> {
   return new Promise<boolean>(resolve => {
-    const workerFilePath = path.resolve('src', 'workers', 'write-kv-worker.js');
+    const workerFilePath = path.resolve('workers', 'write-kv-worker.js');
     const dbFilePath = path.resolve(dbFileName);
 
     const options = { workerData: { dbFilePath: dbFilePath, key: key, value: value } }
@@ -29,7 +29,7 @@ export async function setKeyValueToDb(dbFileName: string, key: string, value: nu
 
 export async function getValueFromDb(dbFileName: string, key: string): Promise<number | undefined> {
   return new Promise<number | undefined>(resolve => {
-    const workerFilePath = path.resolve('src', 'workers', 'read-kv-worker.js');
+    const workerFilePath = path.resolve('workers', 'read-kv-worker.js');
     const dbFilePath = path.resolve(dbFileName);
 
     const worker = new Worker(workerFilePath, { workerData: { dbFilePath: dbFilePath, key: key } });
@@ -56,7 +56,7 @@ export async function getValueFromDb(dbFileName: string, key: string): Promise<n
 
 export async function removeKeyValueFromDb(dbFileName: string, key: string): Promise<void> {
   return new Promise<void>(resolve => {
-    const workerFilePath = path.resolve('src', 'workers', 'remove-kv-worker.js');
+    const workerFilePath = path.resolve('workers', 'remove-kv-worker.js');
     const dbFilePath = path.resolve(dbFileName);
 
     const worker = new Worker(workerFilePath, { workerData: { dbFilePath: dbFilePath, key: key } });

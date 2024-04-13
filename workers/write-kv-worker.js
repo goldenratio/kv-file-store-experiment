@@ -1,5 +1,4 @@
 import { parentPort, workerData } from 'node:worker_threads';
-import { readFile } from 'node:fs/promises';
 
 import { atomicReadFile, atomicWriteFile } from './atomic-file-utils.js';
 

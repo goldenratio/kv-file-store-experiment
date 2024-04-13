@@ -9,14 +9,11 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx ./src/index.ts",
-    "prod": "npm run build && node ./dist/index.js",
-    "build": "tsc"
+    "build": "tsc && node ./dist/index.js"
   },
   "author": "Karthik",
   "devDependencies": {
     "@types/node": "^20.12.7",
-    "tsx": "^4.7.2",
     "typescript": "^5.4.5"
   }
 }

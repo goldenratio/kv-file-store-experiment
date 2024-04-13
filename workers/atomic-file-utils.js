@@ -28,6 +28,11 @@ export async function atomicAppendFile(filePath, data) {
   });
 }
 
+/**
+ * @param {string} filePath
+ * @param {string} data
+ * @return {Promise<void>}
+ */
 export async function atomicWriteFile(filePath, data) {
   return new Promise((resolve, reject) => {
     const perform = () => {
@@ -48,6 +53,10 @@ export async function atomicWriteFile(filePath, data) {
   })
 }
 
+/**
+ * @param {string} filePath
+ * @return {Promise<string>}
+ */
 export async function atomicReadFile(filePath) {
   return new Promise((resolve, reject) => {
     const perform = () => {
@@ -71,10 +80,18 @@ export async function atomicReadFile(filePath) {
   })
 }
 
+/**
+ * @param {string} filePath
+ * @return {boolean}
+ */
 function isLockExist(filePath) {
   return existsSync(filePath + lockFileSuffix);
 }
 
+/**
+ * @param {string} filePath
+ * @return {Promise<void>}
+ */
 async function createLockFile(filePath) {
   try {
     const fileHandle = await open(filePath + lockFileSuffix, 'a');
@@ -84,6 +101,10 @@ async function createLockFile(filePath) {
   }
 }
 
+/**
+ * @param {string} filePath
+ * @return {Promise<void>}
+ */
 async function deleteLockFile(filePath) {
   const lockFilePath = filePath + lockFileSuffix;
 
@@ -91,7 +112,7 @@ async function deleteLockFile(filePath) {
     return Promise.resolve();
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     unlink(lockFilePath)
       .then(() => resolve())
       // we fail safely intentionally, lock file maybe already deleted

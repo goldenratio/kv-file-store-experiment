@@ -9,9 +9,9 @@
 **Command Line Arguments:**
 
 - `-concurrentOperations` : `{number}` use this flag to configure number of concurrent operations
-- `-useMainThread` : `{boolean}` use this flag to run operations on main process or in workers
+- `-useMainThread` : `{boolean}` use this flag to run I/O operations on main process or in worker process
 
 **Example:**
 
-`npm run build -- -concurrentOperations=4 -useMainThread=true`
+`npm run build -- -concurrentOperations=1 -useMainThread=true`
 

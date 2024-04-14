@@ -37,7 +37,6 @@ export class TaskManager {
   clearSchedule(key: string): void {
     const data = this._schedulerTimeoutIdMap.get(key);
     if (data) {
-      // console.log('clear schedule for ', key);
       const { id, fn } = data;
       clearTimeout(id);
       fn();

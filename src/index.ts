@@ -5,8 +5,8 @@ import { config } from './config.js';
 import { getRandomCharacter } from './utils/math-utils.js';
 
 async function main(): Promise<void> {
-  // await runTest('simulation-01', 5_000);
-  await runTest('simulation-02', 15_000);
+  await runTest('simulation-01', 5_000);
+  // await runTest('simulation-02', 15_000);
   // await runTest('simulation-03', 100_000);
 }
 
@@ -18,14 +18,15 @@ async function runTest(testName: string, iterations: number, keyExpiryTimeEnable
     let currentItem = 0;
     const incrementProgress = () => {
       currentItem ++;
-      printProgress(`testName: ${testName}, iterations: ${currentItem}/${iterations} - ${Math.round((currentItem / iterations) * 100)}% `);
+      const pct = Math.round((currentItem / iterations) * 100);
+      printProgress(`testName: ${testName}, keyExpiryTimeEnabled: ${keyExpiryTimeEnabled}, iterations: ${currentItem}/${iterations} - ${pct}% `);
       if (currentItem === iterations) {
         onComplete();
       }
     };
 
     const onComplete = () => {
-      console.log('\ntest done!\n');
+      console.log('\nResult: ');
       kv.metrics.prettyPrint();
       resolve();
     }
@@ -53,8 +54,12 @@ async function runTest(testName: string, iterations: number, keyExpiryTimeEnable
 }
 
 function printProgress(progress: string){
-  process.stdout.cursorTo(0);
-  process.stdout.write(progress);
+  try {
+    process.stdout.cursorTo(0);
+    process.stdout.write(progress);
+  } catch (err) {
+    //
+  }
 }
 
 main();

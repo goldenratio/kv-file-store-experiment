@@ -100,7 +100,7 @@ export class Metrics {
 
     console.table(primaryData);
     console.table(numberOfIO);
-    console.table(errorData);
+    // console.table(errorData);
   }
 }
 

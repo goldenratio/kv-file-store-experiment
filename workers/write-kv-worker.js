@@ -5,7 +5,7 @@ import { atomicReadFile, atomicWriteFile } from './atomic-file-utils.js';
 const key = workerData.key;
 const value = workerData.value;
 
-atomicReadFile(workerData.dbFilePath,  { encoding: 'utf8' })
+atomicReadFile(workerData.dbFilePath)
   .then(data => {
     const lines= data.split('\n');
     const selectedLineIndex = lines.findIndex((value) => value.includes(key));

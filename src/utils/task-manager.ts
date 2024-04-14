@@ -12,7 +12,7 @@ interface TaskType<T = unknown> {
 export class TaskManager {
   private readonly _pendingTasks: Array<TaskType> = [];
   private readonly _activeWorkers = new Set<string>();
-  private readonly _schedulerTimeoutIdMap = new Map<string, NodeJS.Timeout>();
+  private readonly _schedulerTimeoutIdMap = new Map<string, { id: NodeJS.Timeout; fn :() => Promise<unknown> }>();
   private readonly _concurrentTasks: number;
 
   constructor(concurrentTasks: number) {
@@ -31,13 +31,16 @@ export class TaskManager {
     const timeoutId = setTimeout(async () => {
        fn().then(v => onComplete(v));
     }, delayInMs);
-    this._schedulerTimeoutIdMap.set(key, timeoutId);
+    this._schedulerTimeoutIdMap.set(key, { id: timeoutId, fn });
   }
 
   clearSchedule(key: string): void {
-    const timeoutId = this._schedulerTimeoutIdMap.get(key);
-    if (typeof timeoutId !== 'undefined') {
-      clearTimeout(timeoutId);
+    const data = this._schedulerTimeoutIdMap.get(key);
+    if (data) {
+      // console.log('clear schedule for ', key);
+      const { id, fn } = data;
+      clearTimeout(id);
+      fn();
       this._schedulerTimeoutIdMap.delete(key);
     }
   }

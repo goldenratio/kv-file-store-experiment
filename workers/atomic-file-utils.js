@@ -1,36 +1,7 @@
 import { appendFile, open, readFile, unlink, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import {existsSync, writeFileSync, readFileSync} from 'node:fs';
 
 const lockFileSuffix = '-lock';
-
-/**
- * @param {string} filePath
- * @param {string} data
- * @returns {Promise<void>}
- */
-export async function atomicAppendFile(filePath, data) {
-  return new Promise((resolve, reject) => {
-    const perform = () => {
-      if (isLockExist(filePath)) {
-        // wait till lock is released
-        setTimeout(perform, 1);
-      } else {
-        // appendFile(filePath, data)
-        createLockFile(filePath)
-          .catch(() => {
-            // wait till lock is released
-            setTimeout(perform, 1);
-          })
-          .then(() => appendFile(filePath, data))
-          .then(() => deleteLockFile(filePath))
-          .then(() => resolve())
-          .catch(err => reject(err));
-      }
-    };
-
-    perform();
-  });
-}
 
 /**
  * @param {string} filePath
@@ -44,16 +15,17 @@ export async function atomicWriteFile(filePath, data) {
         // wait till lock is released
         setTimeout(perform, 1);
       } else {
-        // writeFile(filePath, data, { encoding: 'utf8' })
-        createLockFile(filePath)
-          .catch(() => {
-            // wait till lock is released
-            setTimeout(perform, 1);
-          })
-          .then(() => writeFile(filePath, data, { encoding: 'utf8' }))
-          .then(() => deleteLockFile(filePath))
-          .then(() => resolve())
-          .catch(err => reject(err));
+        writeFileSync(filePath, data, { encoding: 'utf8' });
+        resolve();
+        // createLockFile(filePath)
+        //   .catch(() => {
+        //     // wait till lock is released
+        //     setTimeout(perform, 1);
+        //   })
+        //   .then(() => writeFile(filePath, data, { encoding: 'utf8' }))
+        //   .then(() => deleteLockFile(filePath))
+        //   .then(() => resolve())
+        //   .catch(err => reject(err));
       }
     };
 
@@ -72,19 +44,20 @@ export async function atomicReadFile(filePath) {
         // wait till lock is released
         setTimeout(perform, 1);
       } else {
-        // writeFile(filePath, data, { encoding: 'utf8' })
-        createLockFile(filePath)
-          .catch(() => {
-            // wait till lock is released
-            setTimeout(perform, 1);
-          })
-          .then(() => readFile(filePath, { encoding: 'utf8' }))
-          .then(data => {
-            return deleteLockFile(filePath)
-              .then(() => data)
-          })
-          .then(data => resolve(data))
-          .catch(err => reject(err));
+        const data = readFileSync(filePath, { encoding: 'utf8', flag: 'r' });
+        resolve(data);
+        // createLockFile(filePath)
+        //   .catch(() => {
+        //     // wait till lock is released
+        //     setTimeout(perform, 1);
+        //   })
+        //   .then(() => readFile(filePath, { encoding: 'utf8' }))
+        //   .then(data => {
+        //     return deleteLockFile(filePath)
+        //       .then(() => data)
+        //   })
+        //   .then(data => resolve(data))
+        //   .catch(err => reject(err));
       }
     };
 

@@ -1,5 +1,5 @@
 {
-  "name": "kv-store-experiment",
+  "name": "kv-file-store-experiment",
   "version": "1.0.0",
   "description": "",
   "engines": {

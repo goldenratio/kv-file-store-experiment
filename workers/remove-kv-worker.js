@@ -1,10 +1,10 @@
 import { parentPort, workerData } from 'node:worker_threads';
-import { readFile } from 'node:fs/promises';
 
-import { atomicWriteFile } from './atomic-file-utils.js';
+import { atomicWriteFile, atomicReadFile } from './atomic-file-utils.js';
 
 const key = workerData.key;
-readFile(workerData.dbFilePath,  { encoding: 'utf8' })
+
+atomicReadFile(workerData.dbFilePath)
   .then(data => {
     const lines= data.split('\n');
     const selectedLineIndex = lines.findIndex((value) => value.includes(key));

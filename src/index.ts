@@ -3,12 +3,9 @@ import { randomInt } from 'node:crypto';
 import { KeyValueStore } from './key-value-store.js';
 import { config } from './config.js';
 import { getRandomCharacter } from './utils/math-utils.js';
-import { MetricData } from './utils/metrics.js';
-
-let metricsReportMap = new Map<string, ReadonlyArray<MetricData>>();
 
 async function main(): Promise<void> {
-  await runTest('simulation-01', 100);
+  await runTest('simulation-01', 5000, true);
   // await runTest('simulation-02', 200);
 }
 
@@ -16,7 +13,6 @@ async function runTest(testName: string, iterations: number, keyExpiryTimeEnable
   return new Promise<void>(async resolve => {
     const kv = new KeyValueStore(config);
     await kv.init();
-    let keyList = new Set<string>();
 
     let currentItem = 0;
     const incrementProgress = () => {
@@ -29,23 +25,21 @@ async function runTest(testName: string, iterations: number, keyExpiryTimeEnable
 
     const onComplete = () => {
       console.log('\ntest done!\n');
-      console.log([... keyList.values()], keyList.size);
-      metricsReportMap.set(testName, kv.getMetricsLog());
+      kv.metrics.prettyPrint();
       resolve();
     }
 
     for (let i = 0; i < iterations; i++) {
-      const operationType = randomInt(0, 2);
+      const operationType = randomInt(0, 1);
       const key = getRandomCharacter();
 
       if (operationType === 0) {
-        const expiryTimeInMs = keyExpiryTimeEnabled ? randomInt(0, 101) : Infinity;
+        const expiryTimeInMs = keyExpiryTimeEnabled ? randomInt(10, 101) : Infinity;
         kv.setValue(key, 99993 + i, expiryTimeInMs)
           .then(_success => {
             // console.log(`set key: ${key}, success: ${success}`);
             incrementProgress();
           });
-        keyList.add(key);
       } else if (operationType === 1) {
         kv.getValue(key)
           .then(_value => {

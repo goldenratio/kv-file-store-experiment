@@ -3,7 +3,7 @@ import path from 'node:path';
 import { removeFile, touchFile } from './utils/file-utils.js';
 import { TaskManager } from './utils/task-manager.js';
 import { getValueFromDb, removeKeyValueFromDb, setKeyValueToDb } from './utils/db-utils.js';
-import { MetricData, Metrics } from './utils/metrics.js';
+import { Metrics } from './utils/metrics.js';
 
 interface KVConfig {
   readonly dbFileName: string,
@@ -43,12 +43,8 @@ export class KeyValueStore {
     return new Promise<boolean>(resolve => {
       const task = () => setKeyValueToDb(this._kvConfig.dbFileName, key, value);
       this._taskManager.add(task, success => {
-          // schedule key expiry
-          if (expiryTimeInMs >= 0 && expiryTimeInMs < Infinity) {
-            const scheduleTask = () => removeKeyValueFromDb(this._kvConfig.dbFileName, key);
-            this._taskManager.schedule(scheduleTask, expiryTimeInMs, key, (_keyRemoved) => {
-              // kv removed by scheduler
-            });
+          if (success) {
+            this.scheduleKeyForExpiration(key, expiryTimeInMs);
           }
           this._metrics.end(metricId, success, !success ? `failed to write key ${key}, with value ${value}, to db` : '');
           resolve(success);
@@ -63,8 +59,8 @@ export class KeyValueStore {
 
     const metricId = this._metrics.begin('get');
 
-    const task = () => getValueFromDb(this._kvConfig.dbFileName, key);
-    return new Promise<number | undefined>((resolve) => {
+    return new Promise<number | undefined>(resolve => {
+      const task = () => getValueFromDb(this._kvConfig.dbFileName, key);
       this._taskManager.add(task, ({ value, success }) => {
         this._metrics.end(metricId, success, !success ? `failed to get value for key: ${key}, from db` : '');
         resolve(value);
@@ -73,7 +69,19 @@ export class KeyValueStore {
 
   }
 
-  getMetricsLog(): ReadonlyArray<MetricData> {
-    return this._metrics.getLogs();
+  get metrics(): Metrics {
+    return this._metrics;
+  }
+
+  private scheduleKeyForExpiration(key: string, expiryTimeInMs: number): void {
+    if (expiryTimeInMs < 0 || expiryTimeInMs === Infinity) {
+      return;
+    }
+    const task = () => removeKeyValueFromDb(this._kvConfig.dbFileName, key);
+    this._taskManager.schedule(task, expiryTimeInMs, key, (keyRemoved) => {
+      if (!keyRemoved) {
+        console.log(`key ${key} failed to be removed by scheduler!`);
+      }
+    });
   }
 }

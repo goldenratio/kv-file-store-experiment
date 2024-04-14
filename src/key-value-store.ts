@@ -96,7 +96,6 @@ export class KeyValueStore {
 
   dispose(): void {
     clearInterval(this._activeKeyExpirationTimer);
-    this.cleanupExpiredKeys();
   }
 
   get metrics(): Metrics {

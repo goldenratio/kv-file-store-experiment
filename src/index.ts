@@ -1,8 +1,6 @@
-import { randomInt } from 'node:crypto';
-
 import { KeyValueStore } from './key-value-store.js';
 import { config } from './config.js';
-import { getRandomCharacter } from './utils/math-utils.js';
+import { getRandomCharacter, randomInt } from './utils/math-utils.js';
 
 async function main(): Promise<void> {
   await runTest('simulation-01', 10, false);
@@ -33,11 +31,11 @@ async function runTest(testName: string, iterations: number, keyExpiryTimeEnable
     }
 
     for (let i = 0; i < iterations; i++) {
-      const operationType = randomInt(0, 2);
+      const operationType = randomInt(0, 1);
       const key = getRandomCharacter();
 
       if (operationType === 0) {
-        const expiryTimeInMs = keyExpiryTimeEnabled ? randomInt(10, 101) : Infinity;
+        const expiryTimeInMs = keyExpiryTimeEnabled ? randomInt(10, 100) : Infinity;
         kv.setValue(key, 99993 + i, expiryTimeInMs)
           .then(_success => {
             // console.log(`set key: ${key}, success: ${success}`);

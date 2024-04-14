@@ -75,7 +75,6 @@ export class KeyValueStore {
             if (success) {
               this._keyExpiryTimeMap.delete(key);
             }
-            resolve(undefined);
           });
         resolve(undefined);
         return;

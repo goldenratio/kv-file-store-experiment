@@ -4,6 +4,7 @@ import { removeFile, touchFile } from './utils/file-utils.js';
 import { TaskManager } from './utils/task-manager.js';
 import {getValueFromDb, removeKeyValueFromDb, setKeyValueToDb} from './utils/db-utils.js';
 import { Metrics } from './utils/metrics.js';
+import { notEmpty } from './utils/type-utils.js';
 
 export interface KVConfig {
   readonly dbFileName: string,
@@ -16,14 +17,21 @@ export class KeyValueStore {
   private readonly _taskManager: TaskManager;
   private readonly _metrics: Metrics;
   private readonly _keyExpiryTimeMap = new Map<string, number>();
+  private readonly _activeKeyExpirationTimer: NodeJS.Timeout;
 
   private _isInitialized: boolean = false;
+  private _keyCleanupBusy: boolean = false;
 
   constructor(config: KVConfig) {
     console.log('KeyValueStore, config: ', config);
     this._kvConfig = config;
     this._taskManager = new TaskManager(this._kvConfig.concurrentOperations);
     this._metrics = new Metrics();
+
+    // active key expiration handler
+    this._activeKeyExpirationTimer = setInterval(() => {
+      this.cleanupExpiredKeys();
+    }, 100);
   }
 
   async init(): Promise<void> {
@@ -60,9 +68,16 @@ export class KeyValueStore {
     }
 
     return new Promise<number | undefined>(resolve => {
+      // passive key expiration handling
       if (this.hasKeyExpired(key)) {
         removeKeyValueFromDb(this._kvConfig.dbFileName, key, this._kvConfig.useMainThread)
-          .then(() => resolve(undefined));
+          .then(success => {
+            if (success) {
+              this._keyExpiryTimeMap.delete(key);
+            }
+            resolve(undefined);
+          });
+        resolve(undefined);
         return;
       }
 
@@ -87,5 +102,39 @@ export class KeyValueStore {
   private hasKeyExpired(key: string): boolean {
     const cachedKeyExpiryTime = this._keyExpiryTimeMap.get(key);
     return typeof cachedKeyExpiryTime === 'number' && cachedKeyExpiryTime < Date.now();
+  }
+
+  private cleanupExpiredKeys(): Promise<void> {
+    if (this._keyCleanupBusy) {
+      return Promise.resolve();
+    }
+    return new Promise<void>(resolve => {
+      const expiredKeys = [... this._keyExpiryTimeMap.entries()]
+        .map(([key, expiryTime]) => {
+          if (expiryTime < Date.now()) {
+            return key;
+          }
+          return undefined;
+        })
+        .filter(notEmpty);
+
+      if (expiredKeys.length > 0) {
+        this._keyCleanupBusy = true;
+        removeKeyValueFromDb(this._kvConfig.dbFileName, expiredKeys, this._kvConfig.useMainThread)
+          .then(success => {
+            if (success) {
+              expiredKeys.forEach(key => this._keyExpiryTimeMap.delete(key));
+            }
+
+            this._keyCleanupBusy = false;
+            if (this._keyExpiryTimeMap.size === 0) {
+              clearInterval(this._activeKeyExpirationTimer);
+            }
+            resolve();
+          });
+        return;
+      }
+      resolve();
+    });
   }
 }

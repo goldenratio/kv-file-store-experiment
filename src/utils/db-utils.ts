@@ -84,7 +84,7 @@ export async function getValueFromDb(dbFileName: string, key: string, runInMainT
   });
 }
 
-export async function removeKeyValueFromDb(dbFileName: string, key: string, runInMainThread: boolean): Promise<boolean> {
+export async function removeKeyValueFromDb(dbFileName: string, key: string | ReadonlyArray<string>, runInMainThread: boolean): Promise<boolean> {
   return new Promise<boolean>(resolve => {
     const dbFilePath = path.resolve(dbFileName);
 

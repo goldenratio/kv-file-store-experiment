@@ -1,6 +1,11 @@
 import { parentPort, workerData, isMainThread } from 'node:worker_threads';
 import { readFileSync, writeFileSync } from 'node:fs';
 
+/**
+ * @param filePath
+ * @param {string | string[] } key
+ * @return {boolean}
+ */
 export default function run(filePath, key) {
   let data = '';
   try {
@@ -13,10 +18,23 @@ export default function run(filePath, key) {
   }
   const lines= data.split('\n');
 
-  const selectedLineIndex = lines.findIndex((value) => value.includes(key));
-  if (selectedLineIndex >= 0) {
-    lines.splice(selectedLineIndex, 1);
-    data = lines.join('\n');
+  if (typeof key === 'string') {
+    const selectedLineIndex = lines.findIndex((value) => value.includes(key));
+    if (selectedLineIndex >= 0) {
+      lines.splice(selectedLineIndex, 1);
+      data = lines.join('\n');
+    }
+  } else {
+    const selectedLineIndexes = key
+      .map(keyToFind => lines.findIndex(lineValue => lineValue.includes(keyToFind)))
+      .sort((a, b) => b - a);
+
+    if (selectedLineIndexes.length > 0) {
+      selectedLineIndexes.forEach(lineIndex => {
+        lines.splice(lineIndex, 1);
+      });
+      data = lines.join('\n');
+    }
   }
 
   try {

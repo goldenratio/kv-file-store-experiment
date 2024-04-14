@@ -110,7 +110,7 @@ function calculateAverage(value: Array<number>): number {
   }
 
   const sum = value.reduce((total, num) => total + num, 0);
-  return Math.round(sum / value.length);
+  return sum / value.length;
 }
 
 function calculateMedian(sortedArr: Array<number>): number {
@@ -122,7 +122,7 @@ function calculateMedian(sortedArr: Array<number>): number {
   const middleIndex = Math.floor(length / 2);
 
   if (length % 2 === 0) {
-    return Math.round(((sortedArr[middleIndex - 1] || 0) + (sortedArr[middleIndex] || 0)) / 2);
+    return ((sortedArr[middleIndex - 1] || 0) + (sortedArr[middleIndex] || 0)) / 2;
   } else {
     return sortedArr[middleIndex] || 0;
   }

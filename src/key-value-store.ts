@@ -14,7 +14,8 @@ export interface KVConfig {
 export class KeyValueStore {
   private readonly _kvConfig: KVConfig;
   private readonly _taskManager: TaskManager;
-  protected readonly _metrics: Metrics;
+  private readonly _metrics: Metrics;
+  private readonly _keyExpiryTimeMap = new Map<string, number>();
 
   private _isInitialized: boolean = false;
 
@@ -37,7 +38,7 @@ export class KeyValueStore {
       throw Error('KV not initialized');
     }
 
-    this._taskManager.clearSchedule(key);
+    this._keyExpiryTimeMap.set(key, Date.now() + expiryTimeInMs);
 
     return new Promise<boolean>(resolve => {
       let metricId: number = -1;
@@ -48,25 +49,29 @@ export class KeyValueStore {
 
       this._taskManager.add(task, success => {
         this._metrics.end(metricId, success, !success ? `failed to write key ${key}, with value ${value}, to db` : '');
-          if (success) {
-            this.scheduleKeyForExpiration(key, expiryTimeInMs);
-          }
           resolve(success);
         });
     });
   }
 
-  async getValue(key: string): Promise<number | undefined> {
+  getValue(key: string): Promise<number | undefined> {
     if (!this._isInitialized) {
       throw Error('KV not initialized');
     }
 
     return new Promise<number | undefined>(resolve => {
+      if (this.hasKeyExpired(key)) {
+        removeKeyValueFromDb(this._kvConfig.dbFileName, key, this._kvConfig.useMainThread)
+          .then(() => resolve(undefined));
+        return;
+      }
+
       let metricId: number = -1;
       const task = () => {
         metricId = this._metrics.begin('get');
         return getValueFromDb(this._kvConfig.dbFileName, key, this._kvConfig.useMainThread);
       }
+
       this._taskManager.add(task, ({ value, success }) => {
         this._metrics.end(metricId, success, !success ? `failed to get value for key: ${key}, from db` : '');
         resolve(value);
@@ -79,15 +84,8 @@ export class KeyValueStore {
     return this._metrics;
   }
 
-  private scheduleKeyForExpiration(key: string, expiryTimeInMs: number): void {
-    if (expiryTimeInMs < 0 || expiryTimeInMs === Infinity) {
-      return;
-    }
-    const task = () => removeKeyValueFromDb(this._kvConfig.dbFileName, key, this._kvConfig.useMainThread);
-    this._taskManager.schedule(task, expiryTimeInMs, key, (keyRemoved) => {
-      if (!keyRemoved) {
-        console.log(`key ${key} failed to be removed by scheduler!`);
-      }
-    });
+  private hasKeyExpired(key: string): boolean {
+    const cachedKeyExpiryTime = this._keyExpiryTimeMap.get(key);
+    return typeof cachedKeyExpiryTime === 'number' && cachedKeyExpiryTime < Date.now();
   }
 }

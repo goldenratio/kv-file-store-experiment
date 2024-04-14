@@ -21,7 +21,3 @@ export async function touchFile(filePath: string): Promise<void> {
     await Promise.reject(err);
   }
 }
-
-export function noop(): void {
-  // do nothing
-}

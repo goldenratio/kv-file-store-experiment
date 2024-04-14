@@ -2,12 +2,13 @@ import path from 'node:path';
 
 import { removeFile, touchFile } from './utils/file-utils.js';
 import { TaskManager } from './utils/task-manager.js';
-import { getValueFromDb, removeKeyValueFromDb, setKeyValueToDb } from './utils/db-utils.js';
+import {getValueFromDb, removeKeyValueFromDb, setKeyValueToDb} from './utils/db-utils.js';
 import { Metrics } from './utils/metrics.js';
 
-interface KVConfig {
+export interface KVConfig {
   readonly dbFileName: string,
-  readonly concurrentThreads: number
+  readonly concurrentOperations: number,
+  readonly useMainThread: boolean,
 }
 
 export class KeyValueStore {
@@ -20,7 +21,7 @@ export class KeyValueStore {
   constructor(config: KVConfig) {
     console.log('KeyValueStore, config: ', config);
     this._kvConfig = config;
-    this._taskManager = new TaskManager(this._kvConfig.concurrentThreads);
+    this._taskManager = new TaskManager(this._kvConfig.concurrentOperations);
     this._metrics = new Metrics();
   }
 
@@ -37,16 +38,20 @@ export class KeyValueStore {
       throw Error('KV not initialized');
     }
 
-    const metricId = this._metrics.begin('set');
     this._taskManager.clearSchedule(key);
 
     return new Promise<boolean>(resolve => {
-      const task = () => setKeyValueToDb(this._kvConfig.dbFileName, key, value);
+      let metricId: number = -1;
+      const task = () => {
+        metricId = this._metrics.begin('set');
+        return setKeyValueToDb(this._kvConfig.dbFileName, key, value, this._kvConfig.useMainThread);
+      };
+
       this._taskManager.add(task, success => {
+        this._metrics.end(metricId, success, !success ? `failed to write key ${key}, with value ${value}, to db` : '');
           if (success) {
             this.scheduleKeyForExpiration(key, expiryTimeInMs);
           }
-          this._metrics.end(metricId, success, !success ? `failed to write key ${key}, with value ${value}, to db` : '');
           resolve(success);
         });
     });
@@ -57,10 +62,12 @@ export class KeyValueStore {
       throw Error('KV not initialized');
     }
 
-    const metricId = this._metrics.begin('get');
-
     return new Promise<number | undefined>(resolve => {
-      const task = () => getValueFromDb(this._kvConfig.dbFileName, key);
+      let metricId: number = -1;
+      const task = () => {
+        metricId = this._metrics.begin('get');
+        return getValueFromDb(this._kvConfig.dbFileName, key, this._kvConfig.useMainThread);
+      }
       this._taskManager.add(task, ({ value, success }) => {
         this._metrics.end(metricId, success, !success ? `failed to get value for key: ${key}, from db` : '');
         resolve(value);
@@ -77,7 +84,7 @@ export class KeyValueStore {
     if (expiryTimeInMs < 0 || expiryTimeInMs === Infinity) {
       return;
     }
-    const task = () => removeKeyValueFromDb(this._kvConfig.dbFileName, key);
+    const task = () => removeKeyValueFromDb(this._kvConfig.dbFileName, key, this._kvConfig.useMainThread);
     this._taskManager.schedule(task, expiryTimeInMs, key, (keyRemoved) => {
       if (!keyRemoved) {
         console.log(`key ${key} failed to be removed by scheduler!`);

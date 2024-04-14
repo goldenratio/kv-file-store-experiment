@@ -43,8 +43,8 @@ export class Metrics {
     if (value) {
       const startTime = value.startTime;
       this._payload.set(metricId, {... value, ... { timeSpent: Date.now() - startTime, success, message } })
+      this._appEndTime = Date.now();
     }
-    this._appEndTime = Date.now();
   }
 
   getLogs(): ReadonlyArray<MetricData> {

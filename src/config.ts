@@ -1,10 +1,13 @@
 import * as os from 'os';
+import { KVConfig } from './key-value-store.js';
+
 const args = process.argv.slice(2);
 
-const ctArgValue = parseInt(args.find((value) => value.includes('-ct'))?.split('=')[1] || '')
-let concurrentThreads = ctArgValue || os.cpus().length || 2;
+const coArgValue = parseInt(args.find((value) => value.includes('-co'))?.split('=')[1] || '')
+let concurrentOperations = coArgValue || os.cpus().length || 2;
 
-export const config = <const> {
+export const config: KVConfig = {
   dbFileName: 'db.txt',
-  concurrentThreads: concurrentThreads
+  concurrentOperations: concurrentOperations,
+  useMainThread: false
 }

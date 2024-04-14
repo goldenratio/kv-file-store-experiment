@@ -1,10 +1,10 @@
 import { parentPort, workerData } from 'node:worker_threads';
 
-import { atomicWriteFile, atomicReadFile } from './atomic-file-utils.js';
+import { atomicWriteFileAsync, atomicReadFileAsync } from './atomic-file-utils.js';
 
 const key = workerData.key;
 
-atomicReadFile(workerData.dbFilePath)
+atomicReadFileAsync(workerData.dbFilePath)
   .then(data => {
     const lines= data.split('\n');
     const selectedLineIndex = lines.findIndex((value) => value.includes(key));
@@ -17,7 +17,7 @@ atomicReadFile(workerData.dbFilePath)
   })
   .then(data => {
     if (typeof data === 'string') {
-      return atomicWriteFile(workerData.dbFilePath, data);
+      return atomicWriteFileAsync(workerData.dbFilePath, data);
     } else {
       parentPort.postMessage({ success: false });
     }

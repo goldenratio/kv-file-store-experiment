@@ -30,7 +30,7 @@ async function runTest(testName: string, iterations: number, keyExpiryTimeEnable
     }
 
     for (let i = 0; i < iterations; i++) {
-      const operationType = randomInt(0, 1);
+      const operationType = randomInt(0, 2);
       const key = getRandomCharacter();
 
       if (operationType === 0) {
@@ -52,7 +52,6 @@ async function runTest(testName: string, iterations: number, keyExpiryTimeEnable
 }
 
 function printProgress(progress: string){
-  // process.stdout.clearLine(0);
   process.stdout.cursorTo(0);
   process.stdout.write(progress);
 }

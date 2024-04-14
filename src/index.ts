@@ -3,7 +3,7 @@ import { config } from './config.js';
 import { getRandomCharacter, randomInt } from './utils/math-utils.js';
 
 async function main(): Promise<void> {
-  await runTest('simulation-01', 10, false);
+  await runTest('simulation-01', 100, true);
   // await runTest('simulation-02', 15_000);
   // await runTest('simulation-03', 100_000);
 }

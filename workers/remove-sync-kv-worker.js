@@ -24,8 +24,9 @@ export default function run(filePath, key) {
       return pKey === key;
     });
     if (selectedLineIndex >= 0) {
-      lines[selectedLineIndex] = '';
-      // lines.splice(selectedLineIndex, 1);
+      // lines[selectedLineIndex] = '';
+      lines.splice(selectedLineIndex, 1);
+      data = lines.join('\n');
     }
   } else {
     const selectedLineIndexes = key
@@ -38,13 +39,13 @@ export default function run(filePath, key) {
 
     if (selectedLineIndexes.length > 0) {
       selectedLineIndexes.forEach(lineIndex => {
-        lines[lineIndex] = '';
-        // lines.splice(lineIndex, 1);
+        // lines[lineIndex] = '';
+        lines.splice(lineIndex, 1);
       });
+      data = lines.join('\n');
     }
   }
 
-  data = lines.join('\n');
   try {
     writeFileSync(filePath, data, { encoding: 'utf8' });
   } catch (err) {

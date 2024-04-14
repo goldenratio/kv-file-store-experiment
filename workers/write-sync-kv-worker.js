@@ -19,13 +19,12 @@ export default function run(filePath, key, value) {
   });
 
   if (selectedLineIndex >= 0) {
-    lines[selectedLineIndex] = `${key}:${value}`;
-    // lines.splice(selectedLineIndex, 1);
-  } else {
-    lines.push(`${key}:${value}`);
+    // lines[selectedLineIndex] = '';
+    lines.splice(selectedLineIndex, 1);
+    data = lines.join('\n');
   }
 
-  data = lines.join('\n');
+  data = data + `${key}:${value}\n`;
 
   try {
     writeFileSync(filePath, data, { encoding: 'utf8' });

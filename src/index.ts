@@ -14,6 +14,7 @@ async function main(): Promise<void> {
 
 async function runTest(testName: string, iterations: number, keyExpiryTimeEnabled: boolean = false): Promise<void> {
   return new Promise<void>(async resolve => {
+    const startTime = Date.now();
     const kv = new KeyValueStore(config);
     await kv.init();
 
@@ -31,6 +32,7 @@ async function runTest(testName: string, iterations: number, keyExpiryTimeEnable
       console.log('\nResult: ');
       kv.metrics.prettyPrint();
       kv.dispose();
+      console.log(`test (${testName}) finished in ${(Date.now() - startTime) / 1000} seconds\n`);
       resolve();
     }
 

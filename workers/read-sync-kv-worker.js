@@ -19,7 +19,12 @@ export default function run(filePath, key) {
   }
 
   const lines= data.split('\n');
-  const selectedValue = lines.find((value) => value.includes(key))?.split(':')[1];
+  const selectedLine = lines.find(value => {
+    const pKey = value.split(':')[0];
+    return pKey === key;
+  });
+
+  const selectedValue = selectedLine?.split(':')[1];
   const value = Number(selectedValue);
 
   let result;

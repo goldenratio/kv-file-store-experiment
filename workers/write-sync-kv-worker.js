@@ -13,9 +13,13 @@ export default function run(filePath, key, value) {
   }
   const lines= data.split('\n');
 
-  const selectedLineIndex = lines.findIndex((value) => value.includes(key));
+  const selectedLineIndex = lines.findIndex((value) => {
+    const pKey = value.split(':')[0];
+    return pKey === key;
+  });
   if (selectedLineIndex >= 0) {
-    lines.splice(selectedLineIndex, 1);
+    lines[selectedLineIndex] = '';
+    // lines.splice(selectedLineIndex, 1);
     data = lines.join('\n');
   }
 

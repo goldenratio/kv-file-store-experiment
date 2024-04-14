@@ -28,7 +28,6 @@ export class KeyValueStore {
   async init(): Promise<void> {
     const dbFilePath = path.resolve(this._kvConfig.dbFileName);
     await removeFile(dbFilePath);
-    await removeFile(dbFilePath + '-lock');
     await touchFile(dbFilePath);
     this._isInitialized = true;
   }

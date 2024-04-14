@@ -26,10 +26,9 @@ export async function setKeyValueToDb(dbFileName: string, key: string, value: nu
         // console.log(`setting key: ${key} `, data);
         if (data && typeof data['success'] === 'boolean') {
           success = data['success'];
-        }
-
-        if (!success) {
-          console.log('setKey: ', key, data['reason']);
+          if (!success) {
+            console.log('setKey: ', key, data['reason']);
+          }
         }
       });
 
@@ -61,14 +60,13 @@ export async function getValueFromDb(dbFileName: string, key: string, runInMainT
       worker.on('message', (data) => {
         if (data && typeof data['success'] === 'boolean') {
           success = data['success'];
+          if (!success) {
+            console.log('getValue: ', key, data['reason']);
+          }
         }
 
         if (data && typeof data['value'] === 'number') {
           value = data['value'];
-        }
-
-        if (!success) {
-          console.log('getValue: ', key, data['reason']);
         }
       });
 
@@ -99,10 +97,9 @@ export async function removeKeyValueFromDb(dbFileName: string, key: string | Rea
       worker.on('message', (data) => {
         if (data && typeof data['success'] === 'boolean') {
           success = data['success'];
-        }
-
-        if (!success) {
-          console.log('removeKey failed: ', key, data['reason']);
+          if (!success) {
+            console.log('removeKey failed: ', key, data['reason']);
+          }
         }
       });
 

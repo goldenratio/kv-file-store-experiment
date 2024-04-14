@@ -70,12 +70,7 @@ export class KeyValueStore {
     return new Promise<number | undefined>(resolve => {
       // passive key expiration handling
       if (this.hasKeyExpired(key)) {
-        removeKeyValueFromDb(this._kvConfig.dbFileName, key, this._kvConfig.useMainThread)
-          .then(success => {
-            if (success) {
-              this._keyExpiryTimeMap.delete(key);
-            }
-          });
+        removeKeyValueFromDb(this._kvConfig.dbFileName, key, this._kvConfig.useMainThread);
         resolve(undefined);
         return;
       }
@@ -124,15 +119,12 @@ export class KeyValueStore {
       if (expiredKeys.length > 0) {
         this._keyCleanupBusy = true;
         removeKeyValueFromDb(this._kvConfig.dbFileName, expiredKeys, this._kvConfig.useMainThread)
-          .then(success => {
-            if (success) {
-              expiredKeys.forEach(key => this._keyExpiryTimeMap.delete(key));
-            }
-
+          .then(() => {
             this._keyCleanupBusy = false;
-            if (this._keyExpiryTimeMap.size === 0) {
-              clearInterval(this._activeKeyExpirationTimer);
-            }
+            resolve();
+          })
+          .catch(() => {
+            this._keyCleanupBusy = false;
             resolve();
           });
         return;

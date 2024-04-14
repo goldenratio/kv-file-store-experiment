@@ -26,7 +26,6 @@ export default function run(filePath, key) {
     if (selectedLineIndex >= 0) {
       lines[selectedLineIndex] = '';
       // lines.splice(selectedLineIndex, 1);
-      data = lines.join('\n');
     }
   } else {
     const selectedLineIndexes = key
@@ -34,6 +33,7 @@ export default function run(filePath, key) {
         const pKey = lineValue.split(':')[0];
         return pKey === keyToFind;
       }))
+      .filter(value => value >= 0)
       .sort((a, b) => b - a);
 
     if (selectedLineIndexes.length > 0) {
@@ -41,10 +41,10 @@ export default function run(filePath, key) {
         lines[lineIndex] = '';
         // lines.splice(lineIndex, 1);
       });
-      data = lines.join('\n');
     }
   }
 
+  data = lines.join('\n');
   try {
     writeFileSync(filePath, data, { encoding: 'utf8' });
   } catch (err) {

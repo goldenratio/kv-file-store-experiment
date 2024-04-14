@@ -17,13 +17,15 @@ export default function run(filePath, key, value) {
     const pKey = value.split(':')[0];
     return pKey === key;
   });
+
   if (selectedLineIndex >= 0) {
-    lines[selectedLineIndex] = '';
+    lines[selectedLineIndex] = `${key}:${value}`;
     // lines.splice(selectedLineIndex, 1);
-    data = lines.join('\n');
+  } else {
+    lines.push(`${key}:${value}`);
   }
 
-  data = data + `${key}:${value}\n`;
+  data = lines.join('\n');
 
   try {
     writeFileSync(filePath, data, { encoding: 'utf8' });
